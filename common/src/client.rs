@@ -19,7 +19,7 @@
 //! and parsing responses
 //!
 
-use std::os::unix::net::UnixStream;
+use std::net::TcpStream;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -43,7 +43,7 @@ impl Client {
     /// Creates a new client using the path to the socket file and initializing the timeout field to None
     pub fn new<P: AsRef<Path>>(sockpath: P) -> Client {
         Client {
-            sockpath: sockpath.as_ref().to_path_buf(),
+            sockpath: PathBuf::from(sockpath.as_ref()),
             timeout: None,
         }
     }
@@ -60,7 +60,7 @@ impl Client {
         params: S,
     ) -> Result<Response<D>, Error> {
         // Setup connection
-        let mut stream = UnixStream::connect(&self.sockpath)?;
+        let mut stream = TcpStream::connect( &self.sockpath.to_string_lossy().to_string())?;
         stream.set_read_timeout(self.timeout)?;
         stream.set_write_timeout(self.timeout)?;
 
